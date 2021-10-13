@@ -4,20 +4,26 @@
 
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 import datetime
 import re
 
 # usuario e pagina para obter html
 pagina = 'https://casadosdados.com.br/solucao/cnpj/'
 usuario = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36'}
-dados_cnpj = []
 app = FastAPI()
 
 @app.get("/web_scraping/{cnpj}")
 
 # Processo de automação para coleta dos dados
-def web_scraping(cnpj: str):
+def web_scraping(cnpj: str = Query(
+    default=..., 
+    description='Company CNPJ.', 
+    regex=r'([0-9]{14})|([0-9]{11})',
+    example=['00000000000000'],
+    min_length=11, 
+    max_length=14
+)):
     print('iniciou..: ' + str(datetime.datetime.now()))
     url = pagina + str(cnpj)
     req = Request(url, headers=usuario)
@@ -88,7 +94,7 @@ def web_scraping(cnpj: str):
     if(complemento == ''):
         complemento = 'NONE'
     else:
-        complemento = complemento.replace(" ","").replace(";", " ").replace(":","").strip()
+        complemento = complemento.replace("  ","").replace(";", " ").replace(":","").strip()
 
     cep = lista[lista.index('CEP')+1]
     if(cep == ''):
@@ -170,6 +176,5 @@ def web_scraping(cnpj: str):
         'Quadro_societario':societario,
         'Atividade_principal':principal,
         'Atividades_secundaria':secundaria}
-    dados_cnpj.append(dados)
     print('terminou.: ' + str(datetime.datetime.now()))
-    return dados_cnpj
+    return dados
