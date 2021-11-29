@@ -8,14 +8,14 @@ from fastapi import FastAPI, Query
 import datetime
 import re
 
-# usuario e pagina para obter html
+# seu usuario e pagina para obter html
 pagina = 'https://casadosdados.com.br/solucao/cnpj/'
 usuario = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36'}
 app = FastAPI()
 
 @app.get("/web_scraping/{cnpj}")
 
-# Processo de automação para coleta dos dados
+# processo de automacao para coleta dos dados
 def web_scraping(cnpj: str = Query(
     default=..., 
     description='Company CNPJ.', 
@@ -30,7 +30,7 @@ def web_scraping(cnpj: str = Query(
     html = urlopen(req)
     soup = BeautifulSoup(html, 'html.parser')
     
-    # list comprehension do conteúdo do html
+    # list comprehension do conteudo do html
     lista  = [item.getText() for item in soup.findAll('p', {'data-v-0adacb42': ''})]
     lista2 = [item.getText() for item in soup.findAll('a', {'data-v-0adacb42': ''}, href = True)]
 
@@ -71,8 +71,9 @@ def web_scraping(cnpj: str = Query(
     else:
         p = re.compile(r'[0-9]+')
         capital = p.findall(capital)
-        capital = "".join(capital)
-        capital = int(capital)
+        capital = "".join(capital) + '.0'
+        capital = float(capital)
+        print(capital)
 
     natureza = lista[lista.index('Natureza Jurídica')+1]
     if(natureza == []):
@@ -153,7 +154,7 @@ def web_scraping(cnpj: str = Query(
     if(secundaria == []):
         secundaria = 'NONE'
 
-    # dicionário dos dados obtidos
+    # dicionario dos dados obtidos
     dados = {'CNPJ':cnpj,
         'Razao_social':razao,
         'Nome_fantasia':fantasia,
